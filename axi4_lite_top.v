@@ -1,7 +1,10 @@
 module axi4_lite_top #(
-    parameters
+    parameter ADDRESS_WIDTH = 32,
+    parameter DATA_WIDTH = 32
 ) (
-    ports
+    // Global Inputs
+    input ACLK,
+    input ARESETN, // Active low reset
 );
     
 endmodule
