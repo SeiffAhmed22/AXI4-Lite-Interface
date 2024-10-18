@@ -4,7 +4,7 @@ module axi4_lite_top #(
 ) (
     // Global Inputs
     input ACLK,
-    input ARESETN, // Active low reset
+    input ARESETN // Active low reset
 );
     
 endmodule
