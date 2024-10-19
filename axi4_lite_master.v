@@ -7,8 +7,8 @@ module axi4_lite_master #(
     input ARESETN, // Active low reset
 
     // Start Signals
-    input start_read,
-    input start_write,
+    input START_READ,
+    input START_WRITE,
 
     // External ports
     input [ADDRESS_WIDTH - 1:0] address,
@@ -16,14 +16,14 @@ module axi4_lite_master #(
 
     //Read Address Channel
     input M_AXI_ARREADY,
-    output reg [ADDRESS_WIDTH - 1:0] M_AXI_ARADDR,
-    output reg M_AXI_ARVALID,
+    output [ADDRESS_WIDTH - 1:0] M_AXI_ARADDR,
+    output M_AXI_ARVALID,
 
     // Read Data Channel
     input [DATA_WIDTH - 1:0] M_AXI_RDATA,
     input [1:0] M_AXI_RRESP,
     input M_AXI_RVALID,
-    output reg M_AXI_RREADY,
+    output M_AXI_RREADY,
 
     // Write Address Channel
     output [ADDRESS_WIDTH - 1:0] M_AXI_AWADDR,
@@ -31,13 +31,13 @@ module axi4_lite_master #(
     input M_AXI_AWREADY,
 
     // Write Data Channel
-    output reg [DATA_WIDTH - 1:0] M_AXI_WDATA,
-    output reg [DATA_WIDTH/8 - 1:0] M_AXI_WSTRB,
+    output [DATA_WIDTH - 1:0] M_AXI_WDATA,
+    output [DATA_WIDTH/8 - 1:0] M_AXI_WSTRB,
 
     // Write Response Channel
     input [1:0] M_AXI_BRESP,
     input M_AXI_BVALID,
-    output reg M_AXI_BREADY
+    output M_AXI_BREADY
 );
   localparam    IDLE = 3'b000,
                 RADDR_CHANNEL = 3'b001,
@@ -47,9 +47,36 @@ module axi4_lite_master #(
 
   reg current_state, next_state;
 
+  reg start_read, start_write;
+
+  always @(posedge ACLK or negedge ARESETN) begin
+    if (!ARESETN) begin
+      start_read  <= 0;
+      start_write <= 0;
+    end else begin
+      start_read  <= START_READ;
+      start_write <= START_WRITE;
+    end
+  end
+
+  // State Memory
   always @(posedge ACLK or negedge ARESETN) begin
     if (!ARESETN) current_state <= IDLE;
     else current_state <= next_state;
+  end
+
+  // Next State Logic
+  always @(*) begin
+    case (current_state)
+      IDLE: begin
+        if (start_read) next_state = RADDR_CHANNEL;
+        else if (start_write) next_state = WRITE_CHANNEL;
+        else next_state = IDLE;
+      end
+      RADDR_CHANNEL: if (M_AXI_ARREADY && M_AXI_ARVALID) next_state = RDATA_CHANNEL;
+      RDATA_CHANNEL: if (M_AXI_RVALID && M_AXI_RREADY) next_state = IDLE;
+      default: next_state = IDLE;
+    endcase
   end
 
 endmodule
