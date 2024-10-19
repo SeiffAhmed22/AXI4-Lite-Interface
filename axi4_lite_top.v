@@ -7,10 +7,10 @@ module axi4_lite_top #(
     input ARESETN, // Active low asynchronous reset
 
     // Inputs
-    input start_read,
-    input start_write,
+    input START_READ,
+    input START_WRITE,
     input [ADDRESS_WIDTH - 1:0] address,
     input [DATA_WIDTH - 1:0] data
 );
-    
+
 endmodule
