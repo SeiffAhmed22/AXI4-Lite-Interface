@@ -74,4 +74,13 @@ module axi4_lite_slave #(
     endcase
   end
 
+  // Output Logic
+  // Read Address Channel
+  assign S_AXI_ARREADY = (current_state == RADDR_CHANNEL) ? 1 : 0;
+
+  // Read Data Channel
+  assign S_AXI_RDATA = (current_state == RDATA_CHANNEL) ? mem[address] : 0;
+  assign S_AXI_RRESP = (current_state == RDATA_CHANNEL) ? 2'b00 : 0;
+  assign S_AXI_RVALID = (current_state == RDATA_CHANNEL) ? 1 : 0;
+
 endmodule

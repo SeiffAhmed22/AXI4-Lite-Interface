@@ -79,4 +79,12 @@ module axi4_lite_master #(
     endcase
   end
 
+  // Output Logic
+  // Read Address Channel
+  assign M_AXI_ARADDR = (current_state == RADDR_CHANNEL) ? address : 0;
+  assign M_AXI_ARVALID = (current_state == RADDR_CHANNEL) ? 1 : 0;
+
+  // Read Data Channel
+  assign M_AXI_RREADY = (current_state == RADDR_CHANNEL || current_state == RDATA_CHANNEL) ? 1 :0;
+
 endmodule
