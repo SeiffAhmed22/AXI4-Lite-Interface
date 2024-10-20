@@ -33,6 +33,8 @@ module axi4_lite_master #(
     // Write Data Channel
     output [DATA_WIDTH - 1:0] M_AXI_WDATA,
     output [DATA_WIDTH/8 - 1:0] M_AXI_WSTRB,
+    output M_AXI_WVALID,
+    input M_AXI_WREADY,
 
     // Write Response Channel
     input [1:0] M_AXI_BRESP,
@@ -43,11 +45,15 @@ module axi4_lite_master #(
                 RADDR_CHANNEL = 3'b001,
                 RDATA_CHANNEL = 3'b010,
                 WRITE_CHANNEL = 3'b011,
-                WRESP__CHANNEL = 3'b100;
+                WRESP_CHANNEL = 3'b100;
 
   reg current_state, next_state;
 
   reg start_read, start_write;
+
+  wire write_addr, write_data;
+  assign write_addr = (M_AXI_AWVALID && M_AXI_AWREADY);
+  assign write_data = (M_AXI_WVALID && M_AXI_WREADY);
 
   always @(posedge ACLK or negedge ARESETN) begin
     if (!ARESETN) begin
@@ -73,18 +79,32 @@ module axi4_lite_master #(
         else if (start_write) next_state = WRITE_CHANNEL;
         else next_state = IDLE;
       end
-      RADDR_CHANNEL: if (M_AXI_ARREADY && M_AXI_ARVALID) next_state = RDATA_CHANNEL;
-      RDATA_CHANNEL: if (M_AXI_RVALID && M_AXI_RREADY) next_state = IDLE;
+      RADDR_CHANNEL: begin
+        if (M_AXI_ARREADY && M_AXI_ARVALID) next_state = RDATA_CHANNEL;
+        else next_state = RADDR_CHANNEL;
+      end
+      RDATA_CHANNEL: begin
+        if (M_AXI_RVALID && M_AXI_RREADY) next_state = IDLE;
+        else next_state = RDATA_CHANNEL;
+      end
+      WRITE_CHANNEL: begin
+        if (write_addr && write_data) next_state = WRESP_CHANNEL;
+        else next_state = WRITE_CHANNEL;
+      end
+      WRESP_CHANNEL: begin
+        if (M_AXI_BVALID && M_AXI_BREADY) next_state = IDLE;
+        else next_state = WRESP_CHANNEL;
+      end
       default: next_state = IDLE;
     endcase
   end
 
   // Output Logic
   // Read Address Channel
-  assign M_AXI_ARADDR = (current_state == RADDR_CHANNEL) ? address : 0;
+  assign M_AXI_ARADDR  = (current_state == RADDR_CHANNEL) ? address : 0;
   assign M_AXI_ARVALID = (current_state == RADDR_CHANNEL) ? 1 : 0;
 
   // Read Data Channel
-  assign M_AXI_RREADY = (current_state == RADDR_CHANNEL || current_state == RDATA_CHANNEL) ? 1 :0;
+  assign M_AXI_RREADY  = (current_state == RADDR_CHANNEL || current_state == RDATA_CHANNEL) ? 1 : 0;
 
 endmodule
