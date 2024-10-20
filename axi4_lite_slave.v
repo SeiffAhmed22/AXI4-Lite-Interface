@@ -55,8 +55,17 @@ module axi4_lite_slave #(
     if (!ARESETN) begin
       for (i = 0; i < DATA_DEPTH; i = i + 1) mem[i] <= 0;
     end else begin
-      if (current_state == WRITE_CHANNEL) mem[S_AXI_AWADDR] <= S_AXI_WDATA;
-      else if (current_state == RADDR_CHANNEL) address <= S_AXI_ARADDR;
+      if (current_state == WRITE_CHANNEL) begin
+        // Iterate over each byte in the 32-bit data (4 bytes total)
+        for (i = 0; i < DATA_WIDTH / 8; i = i + 1) begin
+          // Check if the corresponding byte is enabled for writing (as indicated by WSTRB)
+          if (S_AXI_WSTRB[i])
+            // If enabled, write the byte from S_AXI_WDATA to the corresponding byte in memory
+            // (i*8) +: 8 selects 8 bits (1 byte) from the write data and stores it in the memory
+            // at the specified address (S_AXI_AWADDR), but only for the relevant byte position (i)
+            mem[S_AXI_AWADDR][(i*8)+:8] <= S_AXI_WDATA[(i*8)+:8];
+        end
+      end else if (current_state == RADDR_CHANNEL) address <= S_AXI_ARADDR;
     end
   end
 
