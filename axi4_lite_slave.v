@@ -112,4 +112,14 @@ module axi4_lite_slave #(
   assign S_AXI_RRESP   = (current_state == RDATA_CHANNEL) ? 2'b00 : 0;
   assign S_AXI_RVALID  = (current_state == RDATA_CHANNEL) ? 1 : 0;
 
+  // Write Address Channel
+  assign S_AXI_AWREADY = (current_state == WRITE_CHANNEL) ? 1 : 0;
+
+  // Write Data Channel
+  assign S_AXI_WREADY  = (current_state == WRITE_CHANNEL) ? 1 : 0;
+
+  // Write Response Channel
+  assign S_AXI_BRESP   = (current_state == WRESP_CHANNEL) ? 0 : 0;
+  assign S_AXI_BVALID  = (current_state == WRESP_CHANNEL) ? 1 : 0;
+
 endmodule

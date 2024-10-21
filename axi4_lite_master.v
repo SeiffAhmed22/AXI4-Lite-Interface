@@ -107,4 +107,16 @@ module axi4_lite_master #(
   // Read Data Channel
   assign M_AXI_RREADY  = (current_state == RADDR_CHANNEL || current_state == RDATA_CHANNEL) ? 1 : 0;
 
+  // Write Address Channel
+  assign M_AXI_AWADDR  = (current_state == WRITE_CHANNEL) ? address : 0;
+  assign M_AXI_AWVALID = (current_state == WRITE_CHANNEL) ? 1 : 0;
+
+  // Write Data Channel
+  assign M_AXI_WDATA   = (current_state == WRITE_CHANNEL) ? data : 0;
+  assign M_AXI_WSTRB   = (current_state == WRITE_CHANNEL) ? 4'b1111 : 0;
+  assign M_AXI_WVALID  = (current_state == WRITE_CHANNEL) ? 1 : 0;
+
+  // Write Response Channel
+  assign M_AXI_BREADY  = (current_state == WRESP_CHANNEL || current_state == WRITE_CHANNEL) ? 1 : 0;
+
 endmodule
