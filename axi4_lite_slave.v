@@ -40,7 +40,7 @@ module axi4_lite_slave #(
                 WRITE_CHANNEL = 3'b011,
                 WRESP_CHANNEL = 3'b100;
 
-  reg current_state, next_state;
+  reg [2:0] current_state, next_state;
 
   reg [DATA_WIDTH - 1:0] mem[DATA_DEPTH - 1:0];
   reg [ADDRESS_WIDTH - 1:0] address;

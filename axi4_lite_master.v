@@ -47,7 +47,7 @@ module axi4_lite_master #(
                 WRITE_CHANNEL = 3'b011,
                 WRESP_CHANNEL = 3'b100;
 
-  reg current_state, next_state;
+  reg [2:0] current_state, next_state;
 
   reg start_read, start_write;
 
